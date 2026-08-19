@@ -1,0 +1,59 @@
+-- AnDepZai UI-only
+-- Giữ UI/menu + nút tròn Banana Cat.
+-- Không chứa các chức năng gameplay cũ.
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local redzlib
+local ok, err = pcall(function()
+    redzlib = loadstring(game:HttpGet("https://pastefy.app/MAbSfkcD/raw"))()
+end)
+
+if not ok or not redzlib then
+    warn("AnDepZai UI: không tải được UI library: " .. tostring(err))
+    return
+end
+
+local Window = redzlib:MakeWindow({
+    Title = "AnDepZai",
+    SubTitle = "UI Only"
+})
+
+local MinimizeButton = Window:AddMinimizeButton({
+    Button = {
+        Image = "rbxassetid://5009915812",
+        BackgroundTransparency = 0,
+        Size = UDim2.fromOffset(55, 55),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        BorderSizePixel = 0,
+        AutoButtonColor = true
+    },
+    Corner = {
+        CornerRadius = UDim.new(1, 0)
+    }
+})
+
+-- Các tab chỉ là giao diện trống, không có callback/chức năng gameplay.
+local Tabs = {
+    Main = Window:MakeTab({
+        Title = "Main",
+        Icon = "home"
+    }),
+    Settings = Window:MakeTab({
+        Title = "Settings",
+        Icon = "settings"
+    })
+}
+
+Tabs.Main:AddSection("AnDepZai")
+Tabs.Main:AddParagraph({
+    Title = "UI Only",
+    Content = "Giao diện đang chạy. Không có chức năng gameplay."
+})
+
+Tabs.Settings:AddSection("Settings")
+Tabs.Settings:AddParagraph({
+    Title = "Status",
+    Content = "UI hoạt động bình thường."
+})
