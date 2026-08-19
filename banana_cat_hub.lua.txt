@@ -1,0 +1,536 @@
+local Fluent = loadstring(game:HttpGet(
+    "https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"
+))()
+
+local SaveManager = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"
+))()
+
+local InterfaceManager = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"
+))()
+
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService  = game:GetService("TeleportService")
+local HttpService      = game:GetService("HttpService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local Window = Fluent:CreateWindow({
+    Title      = "Banana Cat Hub - Blox Fruit [ premium ] by Obii",
+    SubTitle   = "",
+    TabWidth   = 125,
+    Size       = UDim2.fromOffset(410, 380),
+    Acrylic    = false,
+    Theme      = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Shop         = Window:AddTab({ Title = "Shop",                    Icon = "" }),
+    StatusServer = Window:AddTab({ Title = "Status And Server",       Icon = "" }),
+    LocalPlayer  = Window:AddTab({ Title = "LocalPlayer",             Icon = "" }),
+    SellingFarm  = Window:AddTab({ Title = "Selling Farm",            Icon = "" }),
+    HoldSkill    = Window:AddTab({ Title = "Hold and Select Skill",   Icon = "" }),
+    Farming      = Window:AddTab({ Title = "Farming",                 Icon = "" }),
+    SnackFarming = Window:AddTab({ Title = "Snack Farming",           Icon = "" }),
+    FarmingOther = Window:AddTab({ Title = "Farming Other",           Icon = "" }),
+    RaidDungeon  = Window:AddTab({ Title = "Fruit and Raid, Dungeon", Icon = "" }),
+    SeaEvent     = Window:AddTab({ Title = "Sea Event",               Icon = "" }),
+    UpgradeRace  = Window:AddTab({ Title = "Upgrade Race",            Icon = "" }),
+    Items        = Window:AddTab({ Title = "Get and Upgrade Items",   Icon = "" }),
+    Volcano      = Window:AddTab({ Title = "Volcano Event",           Icon = "" }),
+    ESP          = Window:AddTab({ Title = "ESP",                     Icon = "" }),
+    PvP          = Window:AddTab({ Title = "PvP",                     Icon = "" }),
+    Webhook      = Window:AddTab({ Title = "Tab Webhook",             Icon = "" }),
+    Settings     = Window:AddTab({ Title = "Settings",                Icon = "settings" }),
+}
+
+local Options  = Fluent.Options
+local Features = {}
+
+local function SetFeature(Name, State)
+    Features[Name] = State
+end
+
+local function Notify(Text)
+    Fluent:Notify({
+        Title    = "Banana Cat Hub",
+        Content  = Text,
+        Duration = 3
+    })
+end
+
+-- LOGO DRAGGABLE (thay BANANA_CAT_ID bằng asset id của bạn, vd: 123456789)
+local BANANA_CAT_IMAGE = "rbxassetid://125357138591690"
+
+local LogoGui = Instance.new("ScreenGui")
+LogoGui.Name          = "BananaCatLogo"
+LogoGui.ResetOnSpawn  = false
+LogoGui.IgnoreGuiInset = true
+LogoGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+LogoGui.Parent        = game:GetService("CoreGui")
+
+local LogoButton = Instance.new("ImageButton")
+LogoButton.Name             = "Logo"
+LogoButton.Size             = UDim2.fromOffset(54, 54)
+LogoButton.Position         = UDim2.new(0.5, -27, 0, 8)
+LogoButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+LogoButton.BorderSizePixel  = 0
+LogoButton.Image            = BANANA_CAT_IMAGE
+LogoButton.AutoButtonColor  = false
+LogoButton.Parent           = LogoGui
+
+local LogoCorner = Instance.new("UICorner")
+LogoCorner.CornerRadius = UDim.new(1, 0)
+LogoCorner.Parent       = LogoButton
+
+local LogoStroke = Instance.new("UIStroke")
+LogoStroke.Thickness = 2
+LogoStroke.Color     = Color3.fromRGB(255, 220, 40)
+LogoStroke.Parent    = LogoButton
+
+-- Tooltip label
+local LogoLabel = Instance.new("TextLabel")
+LogoLabel.Size              = UDim2.fromOffset(90, 22)
+LogoLabel.Position          = UDim2.new(0.5, -45, 1, 4)
+LogoLabel.BackgroundColor3  = Color3.fromRGB(20, 20, 20)
+LogoLabel.BackgroundTransparency = 0.3
+LogoLabel.BorderSizePixel   = 0
+LogoLabel.Text              = "banana cat Hub"
+LogoLabel.TextColor3        = Color3.fromRGB(255, 220, 40)
+LogoLabel.TextSize          = 11
+LogoLabel.Font              = Enum.Font.GothamBold
+LogoLabel.Visible           = false
+LogoLabel.Parent            = LogoButton
+
+local LabelCorner = Instance.new("UICorner")
+LabelCorner.CornerRadius = UDim.new(0, 6)
+LabelCorner.Parent       = LogoLabel
+
+-- Drag logic
+local dragging   = false
+local dragStart  = nil
+local startPos   = nil
+local hasDragged = false
+
+LogoButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging   = true
+        hasDragged = false
+        dragStart  = input.Position
+        startPos   = LogoButton.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if not dragging then return end
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - dragStart
+        if delta.Magnitude > 6 then
+            hasDragged = true
+        end
+        LogoButton.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+LogoButton.MouseButton1Click:Connect(function()
+    if not hasDragged then
+        Window.Root.Visible = not Window.Root.Visible
+    end
+end)
+
+LogoButton.MouseEnter:Connect(function()
+    LogoLabel.Visible = true
+    LogoButton.BackgroundColor3 = Color3.fromRGB(40, 35, 10)
+end)
+
+LogoButton.MouseLeave:Connect(function()
+    LogoLabel.Visible = false
+    LogoButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+end)
+
+UserInputService.InputBegan:Connect(function(Input, Processed)
+    if Processed then return end
+    if Input.KeyCode == Enum.KeyCode.LeftControl then
+        Window.Root.Visible = not Window.Root.Visible
+    end
+end)
+
+-- SHOP
+Tabs.Shop:AddParagraph({ Title = "Shop", Content = "Shop and ability controls." })
+
+Tabs.Shop:AddDropdown("ShopFightingStyle", {
+    Title  = "Fighting Style",
+    Values = { "Dragon Talon", "God Human", "Sanguine Art", "Electric Claw", "Sharkman Karate", "Death Step", "Superhuman" },
+    Multi  = false,
+    Default = 1
+})
+
+Tabs.Shop:AddButton({
+    Title    = "Buy Selected Style",
+    Callback = function()
+        Notify("Selected fighting style: " .. tostring(Options.ShopFightingStyle.Value))
+    end
+})
+
+Tabs.Shop:AddToggle("AutoBuyAbility", { Title = "Auto Buy Ability", Default = false })
+Options.AutoBuyAbility:OnChanged(function()
+    SetFeature("AutoBuyAbility", Options.AutoBuyAbility.Value)
+end)
+
+-- STATUS AND SERVER
+Tabs.StatusServer:AddParagraph({ Title = "Status And Server", Content = "Server information." })
+
+Tabs.StatusServer:AddButton({
+    Title    = "Server Information",
+    Callback = function()
+        Notify("Players: " .. #Players:GetPlayers() .. "\nPlaceId: " .. game.PlaceId .. "\nJobId: " .. game.JobId)
+    end
+})
+
+Tabs.StatusServer:AddButton({
+    Title    = "Copy JobId",
+    Callback = function()
+        if setclipboard then
+            setclipboard(game.JobId)
+            Notify("JobId copied.")
+        end
+    end
+})
+
+Tabs.StatusServer:AddButton({
+    Title    = "Rejoin Server",
+    Callback = function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end
+})
+
+Tabs.StatusServer:AddToggle("ServerHop", { Title = "Server Hop", Default = false })
+Options.ServerHop:OnChanged(function()
+    SetFeature("ServerHop", Options.ServerHop.Value)
+end)
+
+-- LOCAL PLAYER
+Tabs.LocalPlayer:AddDropdown("SelectTeam", {
+    Title  = "Select Team",
+    Values = { "Pirates", "Marines" },
+    Multi  = false,
+    Default = 1
+})
+
+Tabs.LocalPlayer:AddDropdown("SelectRace", {
+    Title  = "Select Race",
+    Values = { "Human", "Mink", "Fishman", "Skypiea", "Ghoul", "Cyborg" },
+    Multi  = false,
+    Default = 1
+})
+
+Tabs.LocalPlayer:AddToggle("Noclip",       { Title = "Noclip",        Default = false })
+Tabs.LocalPlayer:AddToggle("InfiniteJump", { Title = "Infinite Jump", Default = false })
+
+Tabs.LocalPlayer:AddSlider("WalkSpeed", {
+    Title    = "WalkSpeed",
+    Default  = 16, Min = 16, Max = 100, Rounding = 0,
+    Callback = function(Value)
+        local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if Humanoid then Humanoid.WalkSpeed = Value end
+    end
+})
+
+Tabs.LocalPlayer:AddSlider("JumpPower", {
+    Title    = "JumpPower",
+    Default  = 50, Min = 50, Max = 150, Rounding = 0,
+    Callback = function(Value)
+        local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if Humanoid then
+            Humanoid.UseJumpPower = true
+            Humanoid.JumpPower    = Value
+        end
+    end
+})
+
+UserInputService.JumpRequest:Connect(function()
+    if not Options.InfiniteJump.Value then return end
+    local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if Humanoid then Humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
+end)
+
+RunService.Stepped:Connect(function()
+    if not Options.Noclip.Value then return end
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    for _, Object in ipairs(Character:GetDescendants()) do
+        if Object:IsA("BasePart") then Object.CanCollide = false end
+    end
+end)
+
+-- SELLING FARM
+Tabs.SellingFarm:AddToggle("AutoSell",         { Title = "Auto Sell",          Default = false })
+Tabs.SellingFarm:AddToggle("AutoSellFruit",    { Title = "Auto Sell Fruit",     Default = false })
+Tabs.SellingFarm:AddToggle("AutoSellMaterial", { Title = "Auto Sell Material",  Default = false })
+
+Tabs.SellingFarm:AddDropdown("SellMethod", {
+    Title  = "Sell Method",
+    Values = { "Nearest", "Selected", "Automatic" },
+    Multi  = false,
+    Default = 1
+})
+
+-- HOLD AND SELECT SKILL
+Tabs.HoldSkill:AddDropdown("SelectSkill", {
+    Title  = "Select Skill",
+    Values = { "Z", "X", "C", "V", "F" },
+    Multi  = true,
+    Default = { Z = true, X = true, C = true }
+})
+
+Tabs.HoldSkill:AddToggle("HoldSkill", { Title = "Hold Selected Skill", Default = false })
+
+Tabs.HoldSkill:AddDropdown("SkillMode", {
+    Title  = "Skill Mode",
+    Values = { "Hold", "Spam", "Automatic" },
+    Multi  = false,
+    Default = 1
+})
+
+-- FARMING
+Tabs.Farming:AddToggle("AutoFarm",   { Title = "Auto Farm",   Default = false })
+Tabs.Farming:AddToggle("FastAttack", { Title = "Fast Attack", Default = false })
+Tabs.Farming:AddToggle("AutoQuest",  { Title = "Auto Quest",  Default = false })
+Tabs.Farming:AddToggle("AutoLevel",  { Title = "Auto Level",  Default = false })
+
+Tabs.Farming:AddDropdown("FarmMethod", {
+    Title  = "Farming Method",
+    Values = { "Nearest", "Level", "Quest", "Boss" },
+    Multi  = false,
+    Default = 1
+})
+
+Tabs.Farming:AddDropdown("SelectMob", {
+    Title  = "Select Mob",
+    Values = { "Bandit", "Monkey", "Gorilla", "Pirate", "Brute", "Boss" },
+    Multi  = false,
+    Default = 1
+})
+
+-- SNACK FARMING
+Tabs.SnackFarming:AddToggle("AutoSnack",        { Title = "Auto Snack",         Default = false })
+Tabs.SnackFarming:AddToggle("AutoCollectSnack", { Title = "Auto Collect Snack", Default = false })
+Tabs.SnackFarming:AddToggle("AutoUseSnack",     { Title = "Auto Use Snack",     Default = false })
+
+Tabs.SnackFarming:AddDropdown("SnackMethod", {
+    Title  = "Snack Method",
+    Values = { "Nearest", "All", "Selected" },
+    Multi  = false,
+    Default = 1
+})
+
+-- FARMING OTHER
+Tabs.FarmingOther:AddToggle("AutoChest",       { Title = "Auto Collect Chest",  Default = false })
+Tabs.FarmingOther:AddToggle("AutoMaterial",    { Title = "Auto Collect Material", Default = false })
+Tabs.FarmingOther:AddToggle("AutoBoss",        { Title = "Auto Boss",           Default = false })
+Tabs.FarmingOther:AddToggle("AutoElite",       { Title = "Auto Elite",          Default = false })
+Tabs.FarmingOther:AddToggle("AutoBone",        { Title = "Auto Bone",           Default = false })
+Tabs.FarmingOther:AddToggle("AutoCursedChest", { Title = "Auto Cursed Chest",   Default = false })
+
+-- RAID / DUNGEON
+Tabs.RaidDungeon:AddToggle("AutoRaid",       { Title = "Auto Raid",           Default = false })
+Tabs.RaidDungeon:AddToggle("AutoDungeon",    { Title = "Auto Dungeon",        Default = false })
+Tabs.RaidDungeon:AddToggle("AutoRaidChip",   { Title = "Auto Buy Raid Chip",  Default = false })
+Tabs.RaidDungeon:AddToggle("AutoStartRaid",  { Title = "Auto Start Raid",     Default = false })
+Tabs.RaidDungeon:AddToggle("AutoAwaken",     { Title = "Auto Awaken",         Default = false })
+
+Tabs.RaidDungeon:AddDropdown("RaidType", {
+    Title  = "Select Raid",
+    Values = { "Flame", "Ice", "Sand", "Dark", "Light", "Magma", "Quake", "Buddha", "Spider", "Phoenix", "Dough" },
+    Multi  = false,
+    Default = 1
+})
+
+-- SEA EVENT
+Tabs.SeaEvent:AddToggle("AutoSeaEvent",    { Title = "Auto Sea Event",    Default = false })
+Tabs.SeaEvent:AddToggle("AutoSeaBeast",    { Title = "Auto Sea Beast",    Default = false })
+Tabs.SeaEvent:AddToggle("AutoLeviathan",   { Title = "Auto Leviathan",    Default = false })
+Tabs.SeaEvent:AddToggle("AutoShark",       { Title = "Auto Shark",        Default = false })
+Tabs.SeaEvent:AddToggle("AutoTerrorshark", { Title = "Auto Terror Shark", Default = false })
+Tabs.SeaEvent:AddToggle("AutoShip",        { Title = "Auto Ship Event",   Default = false })
+
+-- UPGRADE RACE
+Tabs.UpgradeRace:AddToggle("AutoRaceV2", { Title = "Auto Upgrade Race V2", Default = false })
+Tabs.UpgradeRace:AddToggle("AutoRaceV3", { Title = "Auto Upgrade Race V3", Default = false })
+Tabs.UpgradeRace:AddToggle("AutoRaceV4", { Title = "Auto Upgrade Race V4", Default = false })
+Tabs.UpgradeRace:AddToggle("AutoGear",   { Title = "Auto Get Gear",        Default = false })
+Tabs.UpgradeRace:AddToggle("AutoTrial",  { Title = "Auto Trial",           Default = false })
+
+-- GET AND UPGRADE ITEMS
+Tabs.Items:AddToggle("AutoCDK",           { Title = "Auto CDK",           Default = false })
+Tabs.Items:AddToggle("AutoSoulGuitar",    { Title = "Auto Soul Guitar",   Default = false })
+Tabs.Items:AddToggle("AutoGodHuman",      { Title = "Auto God Human",     Default = false })
+Tabs.Items:AddToggle("AutoSanguine",      { Title = "Auto Sanguine Art",  Default = false })
+Tabs.Items:AddToggle("AutoElectricClaw",  { Title = "Auto Electric Claw", Default = false })
+Tabs.Items:AddToggle("AutoDragonTalon",   { Title = "Auto Dragon Talon",  Default = false })
+
+Tabs.Items:AddDropdown("SelectItem", {
+    Title  = "Select Item",
+    Values = { "CDK", "Soul Guitar", "God Human", "Sanguine Art", "Electric Claw", "Dragon Talon" },
+    Multi  = false,
+    Default = 1
+})
+
+Tabs.Items:AddButton({
+    Title    = "Get Selected Item",
+    Callback = function()
+        Notify("Selected: " .. tostring(Options.SelectItem.Value))
+    end
+})
+
+-- VOLCANO EVENT
+Tabs.Volcano:AddToggle("AutoVolcano",         { Title = "Auto Volcano",                  Default = false })
+Tabs.Volcano:AddToggle("AutoVolcanoMaterial", { Title = "Auto Collect Volcanic Material", Default = false })
+Tabs.Volcano:AddToggle("AutoEventRelic",      { Title = "Auto Event Relic",              Default = false })
+Tabs.Volcano:AddToggle("AutoCollectEgg",      { Title = "Auto Collect Egg",              Default = false })
+Tabs.Volcano:AddToggle("AutoCollectFog",      { Title = "Auto Collect Fog",              Default = false })
+
+-- ESP
+local ESPObjects = {}
+
+local function RemoveESP(Player)
+    if ESPObjects[Player] then
+        ESPObjects[Player]:Destroy()
+        ESPObjects[Player] = nil
+    end
+end
+
+local function CreateESP(Player)
+    if Player == LocalPlayer then return end
+    if ESPObjects[Player] then return end
+    local Character = Player.Character
+    if not Character then return end
+
+    local Highlight = Instance.new("Highlight")
+    Highlight.Name                = "BananaCatESP"
+    Highlight.FillTransparency    = 0.8
+    Highlight.OutlineTransparency = 0
+    Highlight.DepthMode           = Enum.HighlightDepthMode.AlwaysOnTop
+    Highlight.Parent              = Character
+    ESPObjects[Player]            = Highlight
+end
+
+local function RefreshESP()
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer then
+            if Options.PlayerESP.Value then CreateESP(Player)
+            else RemoveESP(Player) end
+        end
+    end
+end
+
+Tabs.ESP:AddToggle("PlayerESP",  { Title = "Player ESP",  Default = false })
+Tabs.ESP:AddToggle("FruitESP",   { Title = "Fruit ESP",   Default = false })
+Tabs.ESP:AddToggle("ChestESP",   { Title = "Chest ESP",   Default = false })
+Tabs.ESP:AddToggle("NPCESP",     { Title = "NPC ESP",     Default = false })
+Tabs.ESP:AddToggle("IslandESP",  { Title = "Island ESP",  Default = false })
+
+Options.PlayerESP:OnChanged(function() RefreshESP() end)
+
+Players.PlayerAdded:Connect(function(Player)
+    Player.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        if Options.PlayerESP.Value then CreateESP(Player) end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(Player) RemoveESP(Player) end)
+
+-- PVP
+Tabs.PvP:AddToggle("PvPMode",   { Title = "PvP Mode",   Default = false })
+Tabs.PvP:AddToggle("LockTarget", { Title = "Lock Target", Default = false })
+Tabs.PvP:AddToggle("AimAssist",  { Title = "Aim Assist",  Default = false })
+Tabs.PvP:AddToggle("AutoDodge",  { Title = "Auto Dodge",  Default = false })
+
+Tabs.PvP:AddDropdown("TargetPart", {
+    Title  = "Target Part",
+    Values = { "HumanoidRootPart", "Head", "UpperTorso" },
+    Multi  = false,
+    Default = 1
+})
+
+-- WEBHOOK
+Tabs.Webhook:AddInput("WebhookURL", {
+    Title       = "Webhook URL",
+    Default     = "",
+    Placeholder = "Enter webhook URL",
+    Numeric     = false,
+    Finished    = true
+})
+
+Tabs.Webhook:AddInput("WebhookMessage", {
+    Title       = "Message",
+    Default     = "Banana Cat Hub",
+    Placeholder = "Message",
+    Numeric     = false,
+    Finished    = true
+})
+
+Tabs.Webhook:AddButton({
+    Title    = "Send Test Webhook",
+    Callback = function()
+        local URL     = Options.WebhookURL.Value
+        local Message = Options.WebhookMessage.Value
+
+        if URL == "" then
+            Notify("Webhook URL is empty.")
+            return
+        end
+
+        if not request then
+            Notify("HTTP request function is unavailable.")
+            return
+        end
+
+        local Body = HttpService:JSONEncode({ content = Message })
+
+        local Success, Err = pcall(function()
+            request({
+                Url    = URL,
+                Method = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body   = Body
+            })
+        end)
+
+        if Success then
+            Notify("Webhook sent!")
+        else
+            Notify("Failed: " .. tostring(Err))
+        end
+    end
+})
+
+-- SETTINGS
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("BananaCatHub")
+SaveManager:SetFolder("BananaCatHub/BloxFruit")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+SaveManager:LoadAutoloadConfig()
